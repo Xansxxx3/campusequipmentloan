@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/campusequimentloan/campusequimentloan.iml" filepath="$PROJECT_DIR$/campusequimentloan/campusequimentloan.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/campusequipmentloan.iml" filepath="$PROJECT_DIR$/.idea/campusequipmentloan.iml" />
+    </modules>
+  </component>
+</project>
