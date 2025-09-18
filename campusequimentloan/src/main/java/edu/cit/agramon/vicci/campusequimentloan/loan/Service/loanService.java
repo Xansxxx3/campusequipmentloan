@@ -28,38 +28,48 @@ public class loanService {
     private penalty penaltyStrategy = new LatePenaltyStrategy();
 
 
-    public loanEntity createLoan(String equipment, Double penalty, String studentNo, LocalDateTime startDate, LocalDateTime dueDate, LocalDateTime returnDate, String status){
-       System.out.println(studentNo);
+    public String createLoan(String equipment, String studentNo, LocalDateTime startDate) {
+        System.out.println(studentNo);
 
         Optional<studentEntity> studentOpt = studentrepo.findByStudentNo(studentNo);
 
         if (studentOpt.isEmpty()) {
-            throw new IllegalStateException("Student with studentNo " + studentNo + " does not exist.");
+            return "Student with studentNo " + studentNo + " does not exist.";
         }
 
         long activeLoansCount = loanrepo.countByStudentAndStatus(studentNo, "ACTIVE");
 
         if (activeLoansCount >= 2) {
-            throw new IllegalStateException("A student can only have a maximum of 2 active loans.");
+            return "A student can only have a maximum of 2 active loans.";
         }
 
-        Optional<equipmentEntity> equipmentOpt = equipmentrepo.findByNameAndAvailability(equipment, "AVAILABLE");
+        Optional<equipmentEntity> equipmentOpt = equipmentrepo.findByNameAndAvailability(equipment, true);
 
         if (equipmentOpt.isEmpty()) {
-            throw new IllegalStateException("The equipment is either unavailable or does not exist.");
+            return "The equipment is either unavailable or does not exist or it already exists.";
         }
 
+        equipmentEntity equipmentEntity = equipmentOpt.get();
 
-        dueDate = startDate.plusDays(7);
+        equipmentEntity.setAvailability(false);
+
+        equipmentrepo.save(equipmentEntity);
+
         loanEntity loan = new loanEntity();
         loan.setEquipment(equipment);
         loan.setStudent(studentNo);
         loan.setStartDate(startDate);
-        loan.setDueDate(dueDate);
-        loan.setReturnDate(returnDate);
-        loan.setStatus(status);
-        return loanrepo.save(loan);
+        loan.setDueDate(startDate.plusDays(7));
+        loan.setReturnDate(null);
+        loan.setStatus("ACTIVE");
+
+        loanEntity savedLoan = loanrepo.save(loan);
+
+        return "Loan successfully created. Loan ID: " + savedLoan.getId();
     }
+
+
+
 
     public double calculateLatePenalty(loanEntity loan) {
         if (isLoanOverdue(loan)) {
@@ -68,31 +78,49 @@ public class loanService {
         }
         return 0.0;
     }
-    public loanEntity returnLoan(Long loanId, LocalDateTime returnDate) {
-        // Retrieve the loan by ID
-        loanEntity loan = loanrepo.findById(loanId)
-                .orElseThrow(() -> new IllegalStateException("Loan not found"));
+    public String returnLoan(Long loanId, LocalDateTime returnDate) {
+        // Retrieve the loan entity by ID
+        Optional<loanEntity> loanOpt = loanrepo.findById(loanId);
 
-        // Update the return date of the loan
+        if (loanOpt.isEmpty()) {
+            return "Loan not found for loanId: " + loanId;
+        }
+
+        loanEntity loan = loanOpt.get();
         loan.setReturnDate(returnDate);
 
-        // Check if the loan is overdue
         double penaltyAmount = 0.0;
+        // Check if the return date is after the due date, and calculate the penalty
         if (returnDate.isAfter(loan.getDueDate())) {
-            // If the loan is returned after the due date, calculate the penalty
             long overdueDays = ChronoUnit.DAYS.between(loan.getDueDate(), returnDate);
             penaltyAmount = penaltyStrategy.calculatePenalty(overdueDays);
         }
 
-        // Update penalty in the loan entity
         loan.setPenalty(penaltyAmount);
-
-        // Update the loan status to "RETURNED"
         loan.setStatus("RETURNED");
 
         // Save the updated loan entity
-        return loanrepo.save(loan);
+        loan = loanrepo.save(loan);
+
+        // Retrieve the equipment entity and update its availability
+        Optional<equipmentEntity> equipmentOpt = equipmentrepo.findByNameAndAvailability(loan.getEquipment(), false);
+        if (equipmentOpt.isPresent()) {
+            equipmentEntity equipment = equipmentOpt.get();
+            equipment.setAvailability(true);
+            equipmentrepo.save(equipment);
+        } else {
+            return "Equipment not found for loan ID: " + loanId;
+        }
+
+        // Return success message with loan ID
+        return "Loan successfully returned. Loan ID: " + loanId + " Penalty: " + penaltyAmount;
     }
+
+
+    public List<loanEntity> getAllLoans(){
+        return loanrepo.findAll();
+    }
+
 
     public boolean isLoanOverdue(loanEntity loan) {
         return loan.getDueDate().isBefore(LocalDateTime.now());

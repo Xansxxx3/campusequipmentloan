@@ -15,12 +15,12 @@ public class equipmentEntity {
     private String name;
     private String type;
     private String serialNumber;
-    private String availability;
+    private Boolean availability;
 
     // Constructors
     public equipmentEntity() {}
 
-    public equipmentEntity(String name, String type, String serialNumber, String availability) {
+    public equipmentEntity(String name, String type, String serialNumber, Boolean availability) {
         this.name = name;
         this.type = type;
         this.serialNumber = serialNumber;
@@ -58,11 +58,11 @@ public class equipmentEntity {
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
     }
-    public String getAvailability() {
+    public Boolean getAvailability() {
         return availability;
     }
 
-    public void setAvailability(String availability) {
+    public void setAvailability(Boolean availability) {
         this.availability = availability;
     }
 }

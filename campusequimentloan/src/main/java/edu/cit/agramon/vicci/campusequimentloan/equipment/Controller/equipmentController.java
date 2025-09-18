@@ -4,6 +4,8 @@ import edu.cit.agramon.vicci.campusequimentloan.equipment.Service.equipmentServi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/equipment")
 public class equipmentController {
@@ -12,8 +14,13 @@ public class equipmentController {
     equipmentService equipmentservice;
 
         @PutMapping("/add")
-        public equipmentEntity createEquipment(@RequestBody equipmentEntity equipment){
-            return equipmentservice.createEquipment(equipment.getName(), equipment.getType(), equipment.getSerialNumber(), equipment.getAvailability());
+        public String createEquipment(@RequestBody equipmentEntity equipment){
+            return equipmentservice.createEquipment(equipment.getName(), equipment.getType(), equipment.getSerialNumber());
+        }
+
+        @GetMapping("/getAll")
+        public List<equipmentEntity> getAllEquipment(){
+            return equipmentservice.getAllEquipment();
         }
 
 }

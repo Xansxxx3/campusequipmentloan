@@ -9,4 +9,6 @@ import edu.cit.agramon.vicci.campusequimentloan.student.Entity.studentEntity;
 @Repository
 public interface studentRepo extends JpaRepository<studentEntity, Long>{
     Optional<studentEntity> findByStudentNo(String studentNo);
+
+    Optional<studentEntity> findByEmail(String email);
 }

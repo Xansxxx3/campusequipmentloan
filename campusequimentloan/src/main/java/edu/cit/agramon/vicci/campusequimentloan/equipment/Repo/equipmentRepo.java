@@ -10,5 +10,6 @@ import edu.cit.agramon.vicci.campusequimentloan.equipment.Entity.equipmentEntity
 @Repository
 public interface equipmentRepo extends JpaRepository<equipmentEntity, Long>{
 
-    Optional<equipmentEntity> findByNameAndAvailability(String equipment, String availability);
+    Optional<equipmentEntity> findByNameAndAvailability(String equipment, Boolean availability);
+    Optional<equipmentEntity> findBySerialNumber(String serialNumber);
 }
